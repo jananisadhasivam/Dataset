@@ -1,0 +1,254 @@
+import pandas as pd
+import numpy as np
+import folium
+from folium.plugins import HeatMap
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, accuracy_score
+
+# Load dataset
+data = pd.read_csv("Road.csv")  # Replace with your dataset path
+
+# Basic EDA
+print("Data Head:\n", data.head())
+print("\nData Info:\n")
+data.info()
+print("\nMissing Values:\n", data.isnull().sum())
+
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+import folium
+from folium.plugins import HeatMap
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, accuracy_score
+import matplotlib.pyplot as plt  # Import matplotlib for plotting
+import seaborn as sns  # Import seaborn for enhanced visualizations
+
+# Load dataset
+data = pd.read_csv("Road.csv")  # Replace with your dataset path
+
+# Basic EDA
+print("Data Head:\n", data.head())
+print("\nData Info:\n")
+data.info()
+print("\nMissing Values:\n", data.isnull().sum())
+
+# Data visualization
+plt.figure(figsize=(10, 6))
+sns.countplot(x='Type_of_vehicle', data=data)  # Corrected line
+plt.title("Distribution of vehicle")
+plt.xlabel("Type_of_vehicle")
+plt.ylabel("Count")  # Changed y-axis label to "Count"
+plt.show()
+
+plt.figure(figsize=(12, 6))
+sns.boxplot(x='Type_of_vehicle', y='Driving_experience', data=data)  # Corrected x-axis label
+plt.title("Type_of_vehicle vs. Driving_experience")
+plt.show()
+
+# Correlation heatmap
+plt.figure(figsize=(10, 8))
+# Select only numeric columns for correlation calculation
+numeric_data = data.select_dtypes(include=np.number)
+sns.heatmap(numeric_data.corr(), annot=True, cmap='coolwarm')
+plt.title("Feature Correlation Heatmap")
+plt.show()
+
+
+# Feature selection and preprocessing
+# Encode categorical columns if any
+categorical_cols = data.select_dtypes(include=['object']).columns
+
+
+# Feature selection and preprocessing
+# Encode categorical columns if any
+categorical_cols = data.select_dtypes(include=['object']).columns
+
+
+# Define features and target
+X = data.drop('Casualty_severity', axis=1)
+y = data['Casualty_severity']
+print("x:", X.head())
+print("y:", y.head())
+
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Predictions
+y_pred = model.predict(X_test)
+
+# Evaluation
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
+print("\naccuracy :\n",accuracy_score (y_test, y_pred))
+
+# Feature importance
+feature_importance = pd.Series(model.feature_importances_, index=X.columns)
+feature_importance.nlargest(10).plot(kind='barh')
+plt.title("Top 10 Important Features for Prediction")
+plt.show()
+
+# Save model (optional)
+import joblib
+joblib.dump(model, "road_safety_rf_model.pkl")
+
+print("\nModel training and evaluation completed.")
+
+
+!pip install gradio
+
+
+import gradio as gr
+import pandas as pd
+
+# Define prediction function
+def predict_severity(weather, road_type, location, vehicles_involved, casualties, hour):
+    # Create input dictionary
+    input_data = {
+        f'Weather_{weather}': 1,
+        f'Road_Type_{road_type}': 1,
+        f'Location_{location}': 1,
+        'Vehicles_Involved': int(vehicles_involved),
+        'Casualties': int(casualties),
+        'Hour': int(hour)
+    }
+
+    # Create input DataFrame
+    input_df = pd.DataFrame([input_data])
+
+    # Ensure all required columns exist
+    for col in X.columns:
+        if col not in input_df.columns:
+            input_df[col] = 0
+    input_df = input_df[X.columns]
+
+    # Scale and predict
+    input_scaled = scaler.transform(input_df)
+    prediction = model.predict(input_scaled)
+
+    return f"🎓 Predicted Final Grade (G3): {round(prediction[0], 2)}"
+
+
+def predict_accident_severity(model, scaler, weather_encoder, time_encoder,
+                               temp, humidity, visibility, wind_speed,
+                               weather_condition, sunrise_sunset):
+    """
+    Predicts accident severity based on input features.
+
+    Parameters:
+    - model: trained ML model
+    - scaler: fitted StandardScaler
+    - weather_encoder: fitted LabelEncoder for weather_condition
+    - time_encoder: fitted LabelEncoder for sunrise_sunset
+    - temp: temperature in Fahrenheit
+    - humidity: humidity percentage
+    - visibility: visibility in miles
+    - wind_speed: wind speed in mph
+    - weather_condition: weather description (e.g., 'Clear', 'Rain')
+    - sunrise_sunset: 'Day' or 'Night'
+
+    Returns:
+    - Severity prediction (1 to 4)
+    """
+    
+    # Encode categorical values
+    encoded_weather = weather_encoder.transform([weather_condition])[0]
+    encoded_time = time_encoder.transform([sunrise_sunset])[0]
+    
+    # Create feature array and scale
+    features = np.array([[temp, humidity, visibility, wind_speed, encoded_weather, encoded_time]])
+    scaled_features = scaler.transform(features)
+    
+    # Make prediction
+    severity = model.predict(scaled_features)[0]
+    return severity
+
+
+!pip install gradio
+import gradio as gr
+import pandas as pd
+
+# Make sure your model, scaler, and X.columns are loaded/predefined
+# For example: model = joblib.load("model.pkl"), etc.
+
+def predict_severity(weather, road_type, location, vehicles_involved, casualties, hour):
+    # Build feature vector
+    input_data = {
+        f'Weather_{weather}': 1,
+        f'Road_Type_{road_type}': 1,
+        f'Location_{location}': 1,
+        'Vehicles_Involved': int(vehicles_involved),
+        'Casualties': int(casualties),
+        'Hour': int(hour)
+    }
+
+    # Build DataFrame and ensure all features are present
+    input_df = pd.DataFrame([input_data])
+    for col in X.columns:
+        if col not in input_df.columns:
+            input_df[col] = 0
+    input_df = input_df[X.columns]
+
+    # Scale input and predict
+    input_scaled = scaler.transform(input_df)
+    prediction = model.predict(input_scaled)
+
+    return f"🚧 Predicted Accident Severity: {prediction[0]}"
+
+
+def predict_accident_severity(model, scaler, weather_encoder, time_encoder,
+                               temp, humidity, visibility, wind_speed,
+                               weather_condition, sunrise_sunset):
+    """
+    Predicts accident severity based on input features.
+
+    Parameters:
+    - model: trained ML model
+    - scaler: fitted StandardScaler
+    - weather_encoder: fitted LabelEncoder for weather_condition
+    - time_encoder: fitted LabelEncoder for sunrise_sunset
+    - temp: temperature in Fahrenheit
+    - humidity: humidity percentage
+    - visibility: visibility in miles
+    - wind_speed: wind speed in mph
+    - weather_condition: weather description (e.g., 'Clear', 'Rain')
+    - sunrise_sunset: 'Day' or 'Night'
+
+    Returns:
+    - Severity prediction (1 to 4)
+    """
+
+    # Encode categorical values
+    encoded_weather = weather_encoder.transform([weather_condition])[0]
+    encoded_time = time_encoder.transform([sunrise_sunset])[0]
+
+    # Create feature array and scale
+    features = np.array([[temp, humidity, visibility, wind_speed, encoded_weather, encoded_time]])
+    scaled_features = scaler.transform(features)
+
+    # Make prediction
+    severity = model.predict(scaled_features)[0]
+    return severity
+
+
+
+
+interface = gr.Interface(
+    fn=predict_severity,
+    inputs=[
+        gr.Dropdown(choices=["Clear", "Rain", "Fog", "Snow"], label="Weather"),
+        gr.Dropdown(choices=["Highway", "Urban Road", "Rural Road"], label="Road Type"),
+        gr.Dropdown(choices=["Intersection", "Roundabout", "Straight"], label="Location"),
+        gr.Number(label="Vehicles Involved"),
+        gr.Number(label="Casualties"),
+        gr.Slider(minimum=0, maximum=23, step=1, label="Hour of Day")
+    ],
+    outputs=gr.Textbox(label="Prediction"),
+    title="AI-Powered Road Safety Severity Predictor"
+)
+
+interface.launch()
+
+
